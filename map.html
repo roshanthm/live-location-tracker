@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Live Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <h2>Live Map Tracker</h2>
+  <div id="map" style="height: 500px; width: 90%;"></div>
+
+  <script>
+    const map = L.map('map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    const markers = {};
+
+    function updateMap() {
+      fetch('http://localhost:5000/locations')
+        .then(res => res.json())
+        .then(data => {
+          for (let [id, info] of Object.entries(data)) {
+            if (!markers[id]) {
+              markers[id] = L.marker([info.lat, info.lon]).addTo(map)
+                .bindPopup(`${id}<br>${info.timestamp}`);
+            } else {
+              markers[id].setLatLng([info.lat, info.lon])
+                .setPopupContent(`${id}<br>${info.timestamp}`);
+            }
+          }
+        });
+    }
+
+    updateMap();
+    setInterval(updateMap, 5000);
+  </script>
+</body>
+</html>
