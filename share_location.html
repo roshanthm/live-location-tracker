@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Share Location</title>
+</head>
+<body>
+  <h2>Live Location Sharer (Consent Only)</h2>
+  <p id="status">Waiting for GPS permission...</p>
+
+  <script>
+    const serverUrl = "http://localhost:5000/location"; // Replace with your server URL if hosted
+    const deviceId = prompt("Enter your name or ID:", "friend-phone");
+
+    function sendPosition(pos) {
+      const payload = {
+        device_id: deviceId,
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+      };
+      fetch(serverUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      }).then(() => {
+        document.getElementById('status').textContent =
+          `Sent: ${new Date().toLocaleTimeString()}`;
+      }).catch(e => {
+        document.getElementById('status').textContent = 'Send failed: ' + e;
+      });
+    }
+
+    function err(e) {
+      document.getElementById('status').textContent = 'Error: ' + e.message;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(sendPosition, err);
+      setInterval(() => {
+        navigator.geolocation.getCurrentPosition(sendPosition, err);
+      }, 10000);
+    } else {
+      document.getElementById('status').textContent = 'Geolocation not supported';
+    }
+  </script>
+</body>
+</html>
